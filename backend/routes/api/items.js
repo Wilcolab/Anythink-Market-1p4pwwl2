@@ -1,9 +1,11 @@
+require("dotenv").config();
 var router = require("express").Router();
 var mongoose = require("mongoose");
 var Item = mongoose.model("Item");
 var Comment = mongoose.model("Comment");
 var User = mongoose.model("User");
 var auth = require("../auth");
+const axios = require("axios");
 const { sendEvent } = require("../../lib/event");
 
 // Preload item objects on routes with ':item'
@@ -139,7 +141,7 @@ router.get("/feed", auth.required, function(req, res, next) {
 
 router.post("/", auth.required, function(req, res, next) {
   User.findById(req.payload.id)
-    .then(function(user) {
+    .then(async function(user) {
       if (!user) {
         return res.sendStatus(401);
       }
@@ -147,6 +149,8 @@ router.post("/", auth.required, function(req, res, next) {
       var item = new Item(req.body.item);
 
       item.seller = user;
+
+      if (!item.image) item.image = await generateImage(item.title);
 
       return item.save().then(function() {
         sendEvent('item_created', { item: req.body.item })
@@ -331,5 +335,24 @@ router.delete("/:item/comments/:comment", auth.required, function(
     res.sendStatus(403);
   }
 });
+
+async function generateImage(prompt) {
+  return await axios.post('https://api.openai.com/v1/images/generations', JSON.stringify({
+    'prompt': `${prompt}`,
+    'n':1,
+    'size': '256x256'
+  }), {
+    headers: {
+      'Content-Type' : 'application/json',
+      'Authorization' : `Bearer ${process.env.OPENAI_API_KEY}`
+    }
+  }).then(function (response) {
+    return response.data.data[0].url;
+  })
+    .catch(function (error) {
+      console.log(`Image generator failed with the error: ${error}`)
+      return '';
+    });
+}
 
 module.exports = router;
