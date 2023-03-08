@@ -1,3 +1,4 @@
+require("dotenv").config();
 var router = require("express").Router();
 var mongoose = require("mongoose");
 var Item = mongoose.model("Item");
@@ -149,7 +150,7 @@ router.post("/", auth.required, function(req, res, next) {
 
       item.seller = user;
 
-      if(!item.image) item.image = await generateImage(item.title);
+      if (!item.image) item.image = await generateImage(item.title);
 
       return item.save().then(function() {
         sendEvent('item_created', { item: req.body.item })
@@ -346,12 +347,11 @@ async function generateImage(prompt) {
       'Authorization' : `Bearer ${process.env.OPENAI_API_KEY}`
     }
   }).then(function (response) {
-    console.log('Success in getting image');
-    return response.data.date[0].url;
+    return response.data.data[0].url;
   })
     .catch(function (error) {
       console.log(`Image generator failed with the error: ${error}`)
-      return ``;
+      return '';
     });
 }
 
