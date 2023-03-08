@@ -4,6 +4,7 @@ var Item = mongoose.model("Item");
 var Comment = mongoose.model("Comment");
 var User = mongoose.model("User");
 var auth = require("../auth");
+const axios = require("axios");
 const { sendEvent } = require("../../lib/event");
 
 // Preload item objects on routes with ':item'
