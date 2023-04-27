@@ -1,12 +1,5 @@
 //TODO: seeds script should come here, so we'll be able to put some data in our local env
-const mongoose = require("mongoose")
-
-
-
-if (!process.env.MONGODB_URI) {
-    console.warn("Missing MONGODB_URI in env, please add it to your .env file");
-  }
-  
+const mongoose = require("mongoose");
 const connection = process.env.MONGODB_URI;
 mongoose.connect(connection);
 
@@ -15,8 +8,8 @@ const Item = mongoose.model("Item");
 const Comment = mongoose.model("Comment");
 
 async function seedDatabase() {
-    for(let i = 0; i < 100; i++){
-        const user = { username: `User${i}`, email: `User${i}@emaill.com`};
+    for(let i = 0; i < 100; i++) {
+        const user = { username: `user${i}`, email: `User${i}@emaill.com`};
         const options  = { upsert: true, new: true };
         const createdUser = User.findOneAndUpdate(user, {}, options);
 
@@ -47,7 +40,6 @@ async function seedDatabase() {
             createdItem.comments = commentIds;
             await createdItem.save();
         }
-        
     }
 }
 
