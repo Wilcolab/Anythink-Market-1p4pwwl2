@@ -72,9 +72,9 @@ public class CommentsApi {
         .findById(item.getId(), commentId)
         .map(
             comment -> {
-              if (user.getId() != comment.getSellerId())
+              if (!user.getId().equals(comment.getSellerId()))
               {
-                throw new NoAuthorizationException();
+                 throw new NoAuthorizationException();
               }
               commentRepository.remove(comment);
               return ResponseEntity.noContent().build();
