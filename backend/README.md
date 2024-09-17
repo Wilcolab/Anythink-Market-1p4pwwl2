@@ -1,35 +1,30 @@
-# Anythink Market Backend
+Web routes
+==========
 
-# How it works
+All routes are available on `/docs` or `/redoc` paths with Swagger or ReDoc.
 
-The application uses Spring Boot (Web, Mybatis).
+Project structure
+=================
 
-And the code is organized as this:
+Files related to application are in the `app` or `tests` directories. Application parts are:
 
-1. `api` is the web layer implemented by Spring MVC
-2. `core` is the business model including entities and services
-3. `application` is the high-level services for querying the data transfer objects
-4. `infrastructure`  contains all the implementation classes as the technique details
+    app
+    ├── api              - web related stuff.
+    │   ├── dependencies - dependencies for routes definition.
+    │   ├── errors       - definition of error handlers.
+    │   └── routes       - web routes.
+    ├── core             - application configuration, startup events, logging.
+    ├── db               - db related stuff.
+    │   ├── migrations   - manually written alembic migrations.
+    │   └── repositories - all crud stuff.
+    ├── models           - pydantic models for this application.
+    │   ├── domain       - main models that are used almost everywhere.
+    │   └── schemas      - schemas for using in web routes.
+    ├── resources        - strings that are used in web responses.
+    ├── services         - logic that is not just crud related.
+    └── main.py          - FastAPI application creation and configuration.
 
-# Getting started
+Project structure
+=================
 
-You'll need Java 21 installed.
-
-    ./gradlew bootRun
-
-To test that it works, open a browser tab at http://localhost:3000/api/tags
-Alternatively, you can run:
-
-    curl http://localhost:3000/api/tags
-
-# Run test
-
-The repository contains a lot of test cases to cover both api test and repository test.
-
-    ./gradlew test
-
-# Code format
-
-Use spotless for code format.
-
-    ./gradlew spotlessJavaApply
+Project dependencies are managed by poetry (https://python-poetry.org), using venv (https://docs.python.org/3/library/venv.html).

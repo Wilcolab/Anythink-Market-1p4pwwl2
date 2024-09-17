@@ -1,26 +1,33 @@
 version: "3.8"
 services:
-  anythink-backend-java:
+  anythink-backend-python:
     build: ./backend
-    container_name: anythink-backend-java
-    command: sh -c "cd backend && /wait-for-it.sh postgres-java:5432 -q -t 60 && ./start.sh"
-
-    environment:
-      - PORT=3000
-      - GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}
+    container_name: anythink-backend-python
+    command: >
+      sh -c "cd backend &&
+            poetry install &&
+            poetry export -f "requirements.txt" --without-hashes --with-credentials > "requirements.txt"
+            /wait-for-it.sh postgres-python:5432 -q -t 60 && 
+            poetry run alembic upgrade head &&
+            poetry run gunicorn app.main:app --worker-class=uvicorn.workers.UvicornWorker --bind=0.0.0.0:3000 --workers=5"
     working_dir: /usr/src
     volumes:
-      - ./:/usr/src/
-      - /usr/src/backend/node_modules
+      - ./:/usr/src
     ports:
       - "3000:3000"
+    environment:
+      - APP_ENV=dev
+      - SECRET_KEY=secret
+      - DEBUG=True
+      - DATABASE_URL=postgresql://postgres:@postgres-python:5432/anythink-market
+      - GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}
     depends_on:
-      - "postgres-java"
+      - "postgres-python"
 
   anythink-frontend-react:
     build: ./frontend
     container_name: anythink-frontend-react
-    command: sh -c "cd frontend && yarn install && /wait-for-it.sh anythink-backend-java:3000 -t 120 --strict -- curl --head -X GET --retry 30 --retry-connrefused --retry-delay 1 anythink-backend-java:3000/api/ping && yarn start"
+    command: sh -c "cd frontend && yarn install && /wait-for-it.sh anythink-backend-python:3000 -t 120 --strict -- curl --head -X GET --retry 30 --retry-connrefused --retry-delay 1 anythink-backend-python:3000/api/ping && yarn start"
     environment:
       - NODE_ENV=development
       - PORT=3001
@@ -33,10 +40,10 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      - "anythink-backend-java"
+      - "anythink-backend-python"
 
-  postgres-java:
-    container_name: postgres-java
+  postgres-python:
+    container_name: postgres-python
     restart: on-failure
     image: postgres
     logging:
